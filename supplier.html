@@ -1,0 +1,266 @@
+import java.util.*;
+
+class Supplier {
+    int id;
+    String name;
+    String phone;
+    String email;
+    ArrayList<String> products;
+
+    Supplier(int id, String name, String phone, String email) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.products = new ArrayList<>();
+    }
+}
+
+public class SupplierManagementSystem {
+
+    static Scanner sc = new Scanner(System.in);
+
+    static ArrayList<Supplier> suppliers = new ArrayList<>();
+    static ArrayList<String> allProducts = new ArrayList<>();
+
+    static int supplierId = 1;
+
+    // Add Supplier
+    static void addSupplier() {
+
+        System.out.print("Enter Supplier Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Enter Phone Number: ");
+        String phone = sc.nextLine();
+
+        System.out.print("Enter Email: ");
+        String email = sc.nextLine();
+
+        Supplier s = new Supplier(
+            supplierId++, name, phone, email
+        );
+
+        suppliers.add(s);
+
+        System.out.println("Supplier added successfully!");
+    }
+
+    // Add Product
+    static void addProduct() {
+
+        System.out.print("Enter Product Name: ");
+        String product = sc.nextLine().trim();
+
+        if (product.isEmpty()) {
+            System.out.println("Product name cannot be empty.");
+            return;
+        }
+
+        if (!allProducts.contains(product)) {
+            allProducts.add(product);
+            System.out.println("Product added successfully!");
+        } else {
+            System.out.println("Product already exists!");
+        }
+    }
+
+    // Assign Product to Supplier
+    static void assignProduct() {
+
+        if (suppliers.isEmpty() || allProducts.isEmpty()) {
+            System.out.println("Add suppliers and products first!");
+            return;
+        }
+
+        viewSuppliers();
+        System.out.print("Enter Supplier ID: ");
+        int id = readInt();
+
+        Supplier selected = null;
+
+        for (Supplier s : suppliers) {
+            if (s.id == id) {
+                selected = s;
+                break;
+            }
+        }
+
+        if (selected == null) {
+            System.out.println("Supplier not found!");
+            return;
+        }
+
+        System.out.println("Available Products: " + allProducts);
+
+        System.out.print("Enter Product Name: ");
+        String product = sc.nextLine().trim();
+
+        boolean exists = allProducts.stream()
+            .anyMatch(p -> p.equalsIgnoreCase(product));
+
+        if (!exists) {
+            System.out.println("Product not found!");
+            return;
+        }
+
+        if (selected.products.stream()
+            .anyMatch(p -> p.equalsIgnoreCase(product))) {
+            System.out.println("Product already assigned!");
+            return;
+        }
+
+        selected.products.add(product);
+
+        System.out.println("Product assigned successfully!");
+    }
+
+    // View Suppliers
+    static void viewSuppliers() {
+
+        if (suppliers.isEmpty()) {
+            System.out.println("No suppliers available.");
+            return;
+        }
+
+        System.out.println("\n--- SUPPLIER DETAILS ---");
+
+        for (Supplier s : suppliers) {
+            System.out.println("ID: " + s.id);
+            System.out.println("Name: " + s.name);
+            System.out.println("Phone: " + s.phone);
+            System.out.println("Email: " + s.email);
+            System.out.println("Products: " + s.products);
+            System.out.println("----------------------");
+        }
+    }
+
+    // Search Supplier
+    static void searchSupplier() {
+
+        System.out.print("Enter Supplier Name: ");
+        String name = sc.nextLine();
+
+        boolean found = false;
+
+        for (Supplier s : suppliers) {
+
+            if (s.name.toLowerCase().contains(
+                name.toLowerCase())) {
+
+                System.out.println("Supplier ID: " + s.id);
+                System.out.println("Name: " + s.name);
+                System.out.println("Phone: " + s.phone);
+                System.out.println("Products: " + s.products);
+
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("Supplier not found!");
+        }
+    }
+
+    // Find Suppliers by Product
+    static void findSupplierByProduct() {
+
+        System.out.print("Enter Product Name: ");
+        String product = sc.nextLine();
+
+        boolean found = false;
+
+        for (Supplier s : suppliers) {
+
+            for (String p : s.products) {
+
+                if (p.equalsIgnoreCase(product)) {
+
+                    System.out.println(
+                        "Supplier: " + s.name
+                    );
+
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) {
+            System.out.println(
+                "No supplier provides this product."
+            );
+        }
+    }
+
+    // Safe integer input
+    static int readInt() {
+        while (true) {
+            try {
+                int value = Integer.parseInt(sc.nextLine());
+                return value;
+            } catch (NumberFormatException e) {
+                System.out.print("Enter a valid number: ");
+            }
+        }
+    }
+
+    // Main Menu
+    public static void main(String[] args) {
+
+        int choice;
+
+        do {
+            System.out.println("\n================================");
+            System.out.println("       SUPPLYTRACK SYSTEM");
+            System.out.println("================================");
+            System.out.println("1. Add Supplier");
+            System.out.println("2. Add Product");
+            System.out.println("3. Assign Product to Supplier");
+            System.out.println("4. View All Suppliers");
+            System.out.println("5. Search Supplier");
+            System.out.println("6. Find Supplier by Product");
+            System.out.println("7. Exit");
+
+            System.out.print("Enter your choice: ");
+
+            choice = readInt();
+
+            switch (choice) {
+
+                case 1:
+                    addSupplier();
+                    break;
+
+                case 2:
+                    addProduct();
+                    break;
+
+                case 3:
+                    assignProduct();
+                    break;
+
+                case 4:
+                    viewSuppliers();
+                    break;
+
+                case 5:
+                    searchSupplier();
+                    break;
+
+                case 6:
+                    findSupplierByProduct();
+                    break;
+
+                case 7:
+                    System.out.println("Thank you for using SUPPLYTRACK!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice!");
+            }
+
+        } while (choice != 7);
+
+        sc.close();
+    }
+}
