@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendorVault - Shop Supplier Management System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans flex flex-col md:flex-row antialiased">
+
+    <!-- Mobile Navigation Bar -->
+    <div class="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-lg text-white">V</div>
+            <span class="font-bold text-lg tracking-tight">VendorVault</span>
+        </div>
+        <button id="mobileMenuBtn" class="p-2 text-slate-300 hover:text-white focus:outline-none">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between transition-transform duration-300 transform -translate-x-full md:translate-x-0 shrink-0">
+        <div>
+            <!-- Logo Section -->
+            <div class="h-16 flex items-center px-6 bg-slate-950/40 border-b border-slate-800">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-400 flex items-center justify-center font-extrabold text-xl text-white shadow-lg shadow-brand-500/20 mr-3">V</div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-white text-lg leading-none tracking-tight">VendorVault</span>
+                    <span class="text-xs text-slate-400 mt-1 font-medium">Supplier & Stock Hub</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="p-4 space-y-1.5">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-brand-600 text-white shadow-md shadow-brand-600/30">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+
+                <button onclick="switchTab('suppliers')" id="nav-suppliers" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-truck-field w-5 text-center"></i>
+                    <span>Suppliers Directory</span>
+                </button>
+
+                <button onclick="switchTab('products')" id="nav-products" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-boxes-stacked w-5 text-center"></i>
+                    <span>Product Catalog</span>
+                </button>
+
+                <button onclick="switchTab('mapping')" id="nav-mapping" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-diagram-project w-5 text-center"></i>
+                    <span>Supplier Products Mapping</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Footer / Data Controls -->
+        <div class="p-4 border-t border-slate-800 space-y-2">
+            <div class="px-2 py-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">System State</div>
+            <button onclick="resetData()" class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 transition-colors border border-slate-700/60">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Reset to Sample Data</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <!-- Top Bar Header -->
+        <header class="h-16 glass-header border-b border-slate-200 sticky top-0 z-20 px-6 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <h1 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Overview</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Systems Active
+                </span>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <div class="p-4 md:p-8 space-y-6 max-w-7xl w-full mx-auto">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Metrics Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Suppliers</p>
+                            <h3 id="statTotalSuppliers" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                            <p class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-solid fa-circle-check mr-1"></i>Active partnerships</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-brand-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-truck-field"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Products</p>
+                            <h3 id="statTotalProducts" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                            <p class="text-xs text-slate-500 mt-1 font-medium">Mapped to suppliers</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Low Stock Alerts</p>
+                            <h3 id="statLowStock" class="text-3xl font-extrabold text-amber-600 mt-1">0</h3>
+                            <p class="text-xs text-amber-600 mt-1 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Qty &lt; 15 units</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Top Category</p>
+                            <h3 id="statTopCategory" class="text-xl font-bold text-slate-800 mt-1 truncate max-w-[140px]">-</h3>
+                            <p class="text-xs text-slate-500 mt-1 font-medium">Highest supply volume</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-tags"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Banners / Overview Lists -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Low Stock Urgent Supplier List -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i> Items Needing Reorder
+                                </h3>
+                                <button onclick="switchTab('products')" class="text-xs font-semibold text-brand-600 hover:text-brand-700">View All</button>
+                            </div>
+                            <div id="dashboardLowStockList" class="space-y-3">
+                                <!-- Dynamic insertion -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Suppliers Summary -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                                    <i class="fa-solid fa-building-user text-brand-500 mr-2"></i> Supplier Overview
+                                </h3>
+                                <button onclick="switchTab('suppliers')" class="text-xs font-semibold text-brand-600 hover:text-brand-700">Manage</button>
+                            </div>
+                            <div id="dashboardSupplierList" class="space-y-3">
+                                <!-- Dynamic insertion -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: SUPPLIERS DIRECTORY -->
+            <section id="tab-suppliers" class="tab-content space-y-6 hidden">
+                <!-- Action Controls Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="relative flex-1 max-w-md">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="supplierSearchInput" oninput="renderSuppliers()" placeholder="Search suppliers by name, email, or category..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="supplierStatusFilter" onchange="renderSuppliers()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <button onclick="openSupplierModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-md shadow-brand-600/20 flex items-center space-x-2 transition-all">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Add Supplier</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Supplier Grid Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3.5 px-4">Supplier / Contact</th>
+                                    <th class="py-3.5 px-4">Category</th>
+                                    <th class="py-3.5 px-4">Contact Info</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3.5 px-4">Supplied Items</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suppliersTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: PRODUCT CATALOG -->
+            <section id="tab-products" class="tab-content space-y-6 hidden">
+                <!-- Action Controls Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="relative flex-1 max-w-md">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="productSearchInput" oninput="renderProducts()" placeholder="Search products by title, SKU..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="productSupplierFilter" onchange="renderProducts()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">All Primary Suppliers</option>
+                            <!-- Dynamic options -->
+                        </select>
+                        <button onclick="openProductModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-md shadow-brand-600/20 flex items-center space-x-2 transition-all">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Add Product</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3.5 px-4">Product details</th>
+                                    <th class="py-3.5 px-4">Category</th>
+                                    <th class="py-3.5 px-4">Cost / Selling Price</th>
+                                    <th class="py-3.5 px-4">Stock Level</th>
+                                    <th class="py-3.5 px-4">Primary Supplier</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: SUPPLIER-PRODUCT MAPPING -->
+            <section id="tab-mapping" class="tab-content space-y-6 hidden">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="max-w-xl">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Select Supplier to Inspect Supplied Inventory</label>
+                        <select id="mappingSupplierSelect" onchange="renderSupplierMappingView()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <!-- Dynamic supplier options -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic View Area for Selected Supplier -->
+                <div id="supplierMappingDetails" class="space-y-6">
+                    <!-- Dynamic rendering -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- MODAL: ADD / EDIT SUPPLIER -->
+    <div id="supplierModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 id="supplierModalTitle" class="font-bold text-slate-800 text-lg">Add New Supplier</h3>
+                <button onclick="closeSupplierModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="supplierForm" onsubmit="saveSupplier(event)" class="p-6 space-y-4">
+                <input type="hidden" id="suppId">
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Company / Supplier Name *</label>
+                    <input type="text" id="suppName" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Contact Person *</label>
+                        <input type="text" id="suppContact" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Category / Sector *</label>
+                        <input type="text" id="suppCategory" placeholder="e.g. Electronics, Fresh Produce" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Email Address *</label>
+                        <input type="email" id="suppEmail" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Phone Number *</label>
+                        <input type="text" id="suppPhone" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Supplier Status</label>
+                        <select id="suppStatus" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="Active">Active</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Address / Location</label>
+                        <input type="text" id="suppAddress" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeSupplierModal()" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-md shadow-brand-600/20 transition-all">Save Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT PRODUCT -->
+    <div id="productModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 id="productModalTitle" class="font-bold text-slate-800 text-lg">Add New Product</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)" class="p-6 space-y-4">
+                <input type="hidden" id="prodId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Product Title *</label>
+                        <input type="text" id="prodTitle" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Code *</label>
+                        <input type="text" id="prodSku" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Category *</label>
+                        <input type="text" id="prodCategory" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Stock Quantity *</label>
+                        <input type="number" id="prodStock" required min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Cost Price ($) *</label>
+                        <input type="number" step="0.01" id="prodCost" required min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Selling Price ($) *</label>
+                        <input type="number" step="0.01" id="prodPrice" required min="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Primary Supplier *</label>
+                    <select id="prodSupplier" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Dynamic Options -->
+                    </select>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-md shadow-brand-600/20 transition-all">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC & MOCK DATA -->
+    <script>
+        // --- INITIAL SEED DATA ---
+        const initialSuppliers = [
+            { id: "sup_1", name: "Apex Tech Components", contact: "Marcus Vance", category: "Electronics", email: "m.vance@apextech.com", phone: "+1 (555) 019-2834", status: "Active", address: "San Jose, CA" },
+            { id: "sup_2", name: "Organic Valley Logistics", contact: "Elena Rostova", category: "Groceries & Fresh", email: "elena@organicvalley.io", phone: "+1 (555) 839-1029", status: "Active", address: "Portland, OR" },
+            { id: "sup_3", name: "Titan Hardware Supplies", contact: "David Miller", category: "Hardware & Tools", email: "sales@titanhardware.com", phone: "+1 (555) 472-9182", status: "Active", address: "Chicago, IL" },
+            { id: "sup_4", name: "Luxe Textile Co.", contact: "Sophia Chen", category: "Apparel & Fabrics", email: "sophia@luxetextiles.com", phone: "+1 (555) 291-0394", status: "Pending", address: "New York, NY" }
+        ];
+
+        const initialProducts = [
+            { id: "prd_1", name: "Wireless Mechanical Keyboard", sku: "TECH-MK-01", category: "Electronics", cost: 45 textCost: 45.00, price: 89.99, stock: 42, supplierId: "sup_1" },
+            { id: "prd_2", name: "Ultra-Wide Gaming Monitor 34\"", sku: "TECH-MON-34", category: "Electronics", cost: 280.00, price: 499.99, stock: 8, supplierId: "sup_1" },
+            { id: "prd_3", name: "Cold Pressed Olive Oil 1L", sku: "GROC-OIL-01", category: "Groceries & Fresh", cost: 6.50, price: 14.99, stock: 120, supplierId: "sup_2" },
+            { id: "prd_4", name: "Artisanal Organic Coffee Beans", sku: "GROC-CF-500", category: "Groceries & Fresh", cost: 4.20, price: 11.50, stock: 12, supplierId: "sup_2" },
+            { id: "prd_5", name: "Heavy Duty Cordless Drill 20V", sku: "HARD-DRL-20", category: "Hardware & Tools", cost: 55.00, price: 119.00, stock: 5, supplierId: "sup_3" },
+            { id: "prd_6", name: "Stainless Steel Screwdriver Set", sku: "HARD-SCR-12", category: "Hardware & Tools", cost: 8.50, price: 22.99, stock: 65, supplierId: "sup_3" }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let suppliers = JSON.parse(localStorage.getItem('vv_suppliers')) || initialSuppliers;
+        let products = JSON.parse(localStorage.getItem('vv_products')) || initialProducts;
+
+        function saveData() {
+            localStorage.setItem('vv_suppliers', JSON.stringify(suppliers));
+            localStorage.setItem('vv_products', JSON.stringify(products));
+            updateDashboardMetrics();
+        }
+
+        function resetData() {
+            if (confirm("Reset to default sample dataset? Any added items will be erased.")) {
+                suppliers = [...initialSuppliers];
+                products = [...initialProducts];
+                saveData();
+                renderAll();
+            }
+        }
+
+        // --- NAVIGATION CONTROLLER ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/30');
+                btn.classList.add('hover:bg-slate-800', 'hover:text-white', 'text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.classList.remove('hover:bg-slate-800', 'hover:text-white', 'text-slate-400');
+            activeNav.classList.add('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-600/30');
+
+            // Page title update
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'suppliers': 'Suppliers Directory',
+                'products': 'Product Catalog',
+                'mapping': 'Supplier-Product Mapping inspect'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId];
+
+            // Trigger specific tab renders
+            if (tabId === 'dashboard') updateDashboardMetrics();
+            if (tabId === 'suppliers') renderSuppliers();
+            if (tabId === 'products') renderProducts();
+            if (tabId === 'mapping') renderSupplierMappingView();
+
+            // Mobile sidebar collapse
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+        }
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // --- DASHBOARD LOGIC ---
+        function updateDashboardMetrics() {
+            document.getElementById('statTotalSuppliers').innerText = suppliers.length;
+            document.getElementById('statTotalProducts').innerText = products.length;
+            
+            const lowStockItems = products.filter(p => Number(p.stock) < 15);
+            document.getElementById('statLowStock').innerText = lowStockItems.length;
+
+            // Find top category
+            const categories = {};
+            products.forEach(p => {
+                categories[p.category] = (categories[p.category] || 0) + 1;
+            });
+            let topCat = "-";
+            let maxCount = 0;
+            for (let cat in categories) {
+                if (categories[cat] > maxCount) {
+                    maxCount = categories[cat];
+                    topCat = cat;
+                }
+            }
+            document.getElementById('statTopCategory').innerText = topCat;
+
+            // Render Low Stock Summary List
+            const lowStockContainer = document.getElementById('dashboardLowStockList');
+            if (lowStockItems.length === 0) {
+                lowStockContainer.innerHTML = `<p class="text-sm text-slate-500 py-4 text-center">All inventory stock levels healthy!</p>`;
+            } else {
+                lowStockContainer.innerHTML = lowStockItems.slice(0, 3).map(prod => {
+                    const supp = suppliers.find(s => s.id === prod.supplierId);
+                    return `
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div>
+                                <p class="font-medium text-slate-800 text-sm">${escapeHtml(prod.name)}</p>
+                                <p class="text-xs text-slate-500">Supplier: <span class="font-medium text-slate-700">${supp ? escapeHtml(supp.name) : 'Unassigned'}</span></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                    ${prod.stock} left
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Supplier Quick Overview
+            const supplierListContainer = document.getElementById('dashboardSupplierList');
+            supplierListContainer.innerHTML = suppliers.slice(0, 3).map(supp => {
+                const suppProdCount = products.filter(p => p.supplierId === supp.id).length;
+                return `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-xs">
+                                ${supp.name.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-medium text-slate-800 text-sm">${escapeHtml(supp.name)}</p>
+                                <p class="text-xs text-slate-500">${escapeHtml(supp.category)}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                            ${suppProdCount} Products
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- SUPPLIER MANAGEMENT LOGIC ---
+        function renderSuppliers() {
+            const tbody = document.getElementById('suppliersTableBody');
+            const search = document.getElementById('supplierSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('supplierStatusFilter').value;
+
+            const filtered = suppliers.filter(s => {
+                const matchesSearch = s.name.toLowerCase().includes(search) || 
+                                     s.email.toLowerCase().includes(search) || 
+                                     s.category.toLowerCase().includes(search);
+                const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No suppliers found matching your query.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(supp => {
+                const itemQty = products.filter(p => p.supplierId === supp.id).length;
+                const statusColors = {
+                    'Active': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                    'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+                    'Inactive': 'bg-slate-100 text-slate-600 border-slate-200'
+                };
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3.5 px-4">
+                            <div class="font-semibold text-slate-900">${escapeHtml(supp.name)}</div>
+                            <div class="text-xs text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(supp.contact)}</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600">
+                            <span class="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium">${escapeHtml(supp.category)}</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600 text-xs space-y-0.5">
+                            <div><i class="fa-regular fa-envelope text-slate-400 mr-1 w-4"></i>${escapeHtml(supp.email)}</div>
+                            <div><i class="fa-solid fa-phone text-slate-400 mr-1 w-4"></i>${escapeHtml(supp.phone)}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColors[supp.status] || 'bg-slate-100'}">
+                                ${supp.status}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <button onclick="inspectSupplierProducts('${supp.id}')" class="inline-flex items-center text-xs font-semibold text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-2.5 py-1 rounded-lg transition-colors">
+                                <i class="fa-solid fa-boxes-stacked mr-1.5"></i> ${itemQty} Products
+                            </button>
+                        </td>
+                        <td class="py-3.5 px-4 text-right space-x-2">
+                            <button onclick="editSupplier('${supp.id}')" class="text-slate-400 hover:text-brand-600 p-1.5"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteSupplier('${supp.id}')" class="text-slate-400 hover:text-red-600 p-1.5"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openSupplierModal(supplier = null) {
+            const modal = document.getElementById('supplierModal');
+            document.getElementById('supplierForm').reset();
+            
+            if (supplier) {
+                document.getElementById('supplierModalTitle').innerText = "Edit Supplier Details";
+                document.getElementById('suppId').value = supplier.id;
+                document.getElementById('suppName').value = supplier.name;
+                document.getElementById('suppContact').value = supplier.contact;
+                document.getElementById('suppCategory').value = supplier.category;
+                document.getElementById('suppEmail').value = supplier.email;
+                document.getElementById('suppPhone').value = supplier.phone;
+                document.getElementById('suppStatus').value = supplier.status;
+                document.getElementById('suppAddress').value = supplier.address || '';
+            } else {
+                document.getElementById('supplierModalTitle').innerText = "Add New Supplier";
+                document.getElementById('suppId').value = '';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeSupplierModal() {
+            document.getElementById('supplierModal').classList.add('hidden');
+        }
+
+        function saveSupplier(e) {
+            e.preventDefault();
+            const id = document.getElementById('suppId').value;
+            const newSupp = {
+                id: id || 'sup_' + Date.now(),
+                name: document.getElementById('suppName').value.trim(),
+                contact: document.getElementById('suppContact').value.trim(),
+                category: document.getElementById('suppCategory').value.trim(),
+                email: document.getElementById('suppEmail').value.trim(),
+                phone: document.getElementById('suppPhone').value.trim(),
+                status: document.getElementById('suppStatus').value,
+                address: document.getElementById('suppAddress').value.trim()
+            };
+
+            if (id) {
+                const idx = suppliers.findIndex(s => s.id === id);
+                if (idx !== -1) suppliers[idx] = newSupp;
+            } else {
+                suppliers.push(newSupp);
+            }
+
+            saveData();
+            closeSupplierModal();
+            renderSuppliers();
+        }
+
+        function editSupplier(id) {
+            const supp = suppliers.find(s => s.id === id);
+            if (supp) openSupplierModal(supp);
+        }
+
+        function deleteSupplier(id) {
+            const linkedProds = products.filter(p => p.supplierId === id);
+            let confirmMsg = "Are you sure you want to delete this supplier?";
+            if (linkedProds.length > 0) {
+                confirmMsg = `Warning: This supplier provides ${linkedProds.length} product(s). Deleting will leave those products unassigned. Proceed?`;
+            }
+
+            if (confirm(confirmMsg)) {
+                suppliers = suppliers.filter(s => s.id !== id);
+                // Unassign products primary supplier
+                products.forEach(p => {
+                    if (p.supplierId === id) p.supplierId = '';
+                });
+                saveData();
+                renderSuppliers();
+            }
+        }
+
+        function inspectSupplierProducts(supplierId) {
+            switchTab('mapping');
+            document.getElementById('mappingSupplierSelect').value = supplierId;
+            renderSupplierMappingView();
+        }
+
+        // --- PRODUCT CATALOG LOGIC ---
+        function populateSupplierSelectOptions() {
+            const selects = [document.getElementById('productSupplierFilter'), document.getElementById('prodSupplier')];
+            
+            selects.forEach((select, idx) => {
+                if (!select) return;
+                const currentValue = select.value;
+                let html = idx === 0 ? '<option value="ALL">All Primary Suppliers</option>' : '<option value="">Select Supplier</option>';
+                
+                suppliers.forEach(s => {
+                    html += `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.category)})</option>`;
+                });
+                select.innerHTML = html;
+                select.value = currentValue;
+            });
+        }
+
+        function renderProducts() {
+            populateSupplierSelectOptions();
+            const tbody = document.getElementById('productsTableBody');
+            const search = document.getElementById('productSearchInput').value.toLowerCase();
+            const supplierFilter = document.getElementById('productSupplierFilter').value;
+
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
+                const matchesSupplier = supplierFilter === 'ALL' || p.supplierId === supplierFilter;
+                return matchesSearch && matchesSupplier;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">No products found matching criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(prod => {
+                const supplier = suppliers.find(s => s.id === prod.supplierId);
+                const isLowStock = Number(prod.stock) < 15;
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3.5 px-4">
+                            <div class="font-semibold text-slate-900">${escapeHtml(prod.name)}</div>
+                            <div class="text-xs text-slate-400">SKU: <span class="font-mono">${escapeHtml(prod.sku)}</span></div>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600">
+                            <span class="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium">${escapeHtml(prod.category)}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-medium text-slate-700">
+                            <div>$${Number(prod.price).toFixed(2)}</div>
+                            <div class="text-xs text-slate-400">Cost: $${Number(prod.cost).toFixed(2)}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isLowStock ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">
+                                ${isLowStock ? '<i class="fa-solid fa-triangle-exclamation mr-1 text-amber-600"></i>' : ''}
+                                ${prod.stock} units
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600 text-xs">
+                            ${supplier ? `
+                                <div class="font-medium text-slate-800">${escapeHtml(supplier.name)}</div>
+                                <div class="text-slate-400">${escapeHtml(supplier.email)}</div>
+                            ` : `<span class="text-red-500 italic">Unassigned</span>`}
+                        </td>
+                        <td class="py-3.5 px-4 text-right space-x-2">
+                            <button onclick="editProduct('${prod.id}')" class="text-slate-400 hover:text-brand-600 p-1.5"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteProduct('${prod.id}')" class="text-slate-400 hover:text-red-600 p-1.5"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openProductModal(product = null) {
+            populateSupplierSelectOptions();
+            const modal = document.getElementById('productModal');
+            document.getElementById('productForm').reset();
+
+            if (product) {
+                document.getElementById('productModalTitle').innerText = "Edit Product";
+                document.getElementById('prodId').value = product.id;
+                document.getElementById('prodTitle').value = product.name;
+                document.getElementById('prodSku').value = product.sku;
+                document.getElementById('prodCategory').value = product.category;
+                document.getElementById('prodStock').value = product.stock;
+                document.getElementById('prodCost').value = product.cost;
+                document.getElementById('prodPrice').value = product.price;
+                document.getElementById('prodSupplier').value = product.supplierId;
+            } else {
+                document.getElementById('productModalTitle').innerText = "Add New Product";
+                document.getElementById('prodId').value = '';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('prodId').value;
+            const newProd = {
+                id: id || 'prd_' + Date.now(),
+                name: document.getElementById('prodTitle').value.trim(),
+                sku: document.getElementById('prodSku').value.trim(),
+                category: document.getElementById('prodCategory').value.trim(),
+                stock: parseInt(document.getElementById('prodStock').value) || 0,
+                cost: parseFloat(document.getElementById('prodCost').value) || 0,
+                price: parseFloat(document.getElementById('prodPrice').value) || 0,
+                supplierId: document.getElementById('prodSupplier').value
+            };
+
+            if (id) {
+                const idx = products.findIndex(p => p.id === id);
+                if (idx !== -1) products[idx] = newProd;
+            } else {
+                products.push(newProd);
+            }
+
+            saveData();
+            closeProductModal();
+            renderProducts();
+        }
+
+        function editProduct(id) {
+            const prod = products.find(p => p.id === id);
+            if (prod) openProductModal(prod);
+        }
+
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                products = products.filter(p => p.id !== id);
+                saveData();
+                renderProducts();
+            }
+        }
+
+        // --- SUPPLIER-PRODUCT MAPPING LOGIC ---
+        function renderSupplierMappingView() {
+            const select = document.getElementById('mappingSupplierSelect');
+            // Populate select if empty
+            select.innerHTML = suppliers.map(s => `<option value="${s.id}">${escapeHtml(s.name)} - [${escapeHtml(s.category)}]</option>`).join('');
+
+            const selectedSuppId = select.value || (suppliers[0] ? suppliers[0].id : null);
+            if (selectedSuppId) select.value = selectedSuppId;
+
+            const container = document.getElementById('supplierMappingDetails');
+
+            if (!selectedSuppId) {
+                container.innerHTML = `<div class="p-8 bg-white rounded-2xl text-center text-slate-400">No suppliers exist yet. Please create a supplier first.</div>`;
+                return;
+            }
+
+            const supp = suppliers.find(s => s.id === selectedSuppId);
+            const linkedProducts = products.filter(p => p.supplierId === selectedSuppId);
+
+            container.innerHTML = `
+                <!-- Supplier Info Header Card -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-500 text-white font-bold text-xl flex items-center justify-center shadow-md shadow-brand-500/20">
+                            ${supp.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">${escapeHtml(supp.name)}</h3>
+                            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                                <span><i class="fa-solid fa-user mr-1 text-slate-400"></i> ${escapeHtml(supp.contact)}</span>
+                                <span><i class="fa-solid fa-envelope mr-1 text-slate-400"></i> ${escapeHtml(supp.email)}</span>
+                                <span><i class="fa-solid fa-phone mr-1 text-slate-400"></i> ${escapeHtml(supp.phone)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                        <div class="text-right">
+                            <span class="block text-2xl font-black text-slate-800">${linkedProducts.length}</span>
+                            <span class="text-xs text-slate-400 font-medium">Mapped Products</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linked Inventory Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800">Products Supplied by ${escapeHtml(supp.name)}</h4>
+                        <button onclick="openProductModal()" class="text-xs font-semibold text-brand-600 hover:text-brand-700"><i class="fa-solid fa-plus mr-1"></i> Add Product to Vendor</button>
+                    </div>
+                    ${linkedProducts.length === 0 ? `
+                        <div class="p-8 text-center text-slate-400">
+                            <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i>
+                            <p class="text-sm">No products currently assigned to this supplier.</p>
+                        </div>
+                    ` : `
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3 px-4">Product</th>
+                                        <th class="py-3 px-4">SKU</th>
+                                        <th class="py-3 px-4">Unit Cost</th>
+                                        <th class="py-3 px-4">Selling Price</th>
+                                        <th class="py-3 px-4">In-Stock Qty</th>
+                                        <th class="py-3 px-4 text-right">Stock Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    ${linkedProducts.map(p => {
+                                        const isLowStock = Number(p.stock) < 15;
+                                        return `
+                                            <tr class="hover:bg-slate-50/80">
+                                                <td class="py-3.5 px-4 font-semibold text-slate-800">${escapeHtml(p.name)}</td>
+                                                <td class="py-3.5 px-4 font-mono text-xs text-slate-500">${escapeHtml(p.sku)}</td>
+                                                <td class="py-3.5 px-4 text-slate-700">$${Number(p.cost).toFixed(2)}</td>
+                                                <td class="py-3.5 px-4 text-slate-700 font-medium">$${Number(p.price).toFixed(2)}</td>
+                                                <td class="py-3.5 px-4 font-bold text-slate-800">${p.stock}</td>
+                                                <td class="py-3.5 px-4 text-right">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                                                        ${isLowStock ? 'Low Stock Warning' : 'In Stock'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        // --- UTILITY HELPERS ---
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderAll() {
+            updateDashboardMetrics();
+            renderSuppliers();
+            renderProducts();
+            renderSupplierMappingView();
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            renderAll();
+        };
+    </script>
+</body>
+</html>
